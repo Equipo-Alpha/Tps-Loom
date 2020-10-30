@@ -1,38 +1,46 @@
 package loom.yacc.cliente;
 
+import com.google.gson.Gson;
 import loom.yacc.common.MensajeNetwork;
 import loom.yacc.common.MensajeTipo;
 
-import java.io.*;
+import java.io.BufferedReader;
+import java.io.InputStreamReader;
+import java.io.PrintWriter;
 import java.net.Socket;
 import java.util.Scanner;
 
-import com.google.gson.Gson;
-
-public class Cliente extends Thread{
-    private static Cliente INSTANCE = null;
-
+public class Cliente extends Thread {
     private final String ip;
     private final int port;
+    private final Scanner scanner;
     private String nombre;
-
     private Socket socketCliente;
     private PrintWriter output;
     private BufferedReader input;
-    private final Scanner scanner;
+    private boolean isRunning;
 
     public Cliente(String ip, int port) {
         this.ip = ip;
         this.port = port;
         this.scanner = new Scanner(System.in);
-        INSTANCE = this;
+        this.isRunning = false;
+    }
+
+    public static void main(String[] args) {
+        Cliente cliente = new Cliente("localhost", 20000);
+        cliente.connect();
+        cliente.start();
+        Thread serverListener = new ServerListener(cliente);
+        serverListener.start();
     }
 
     @Override
     public void run() {
+        this.isRunning = true;
         try {
-            while (true) {
-                if(scanner.hasNextLine()) {
+            while (isRunning) {
+                if (scanner.hasNextLine()) {
                     String mensaje = scanner.nextLine();
                     send(MensajeTipo.MENSAJE, mensaje);
                 }
@@ -49,8 +57,7 @@ public class Cliente extends Thread{
             input = new BufferedReader(new InputStreamReader(socketCliente.getInputStream()));
             System.out.println(input.readLine());
             nombre = scanner.nextLine();
-            send(MensajeTipo.CONEXION,"" + this.nombre);
-
+            send(MensajeTipo.CONEXION, "" + this.nombre);
         } catch (Exception ex) {
             System.out.println("Fallo al recibir del servidor");
             ex.printStackTrace();
@@ -59,26 +66,10 @@ public class Cliente extends Thread{
     }
 
     public void send(MensajeTipo type, Object message) {
-        output.println((new Gson()).toJson(new MensajeNetwork(type, message)));
-    }
-
-    public static void main(String[] args) {
-        Cliente cliente = new Cliente("localhost", 20000);
-        cliente.connect();
-        cliente.start();
-        Thread serverListener = new ServerListener(cliente);
-        serverListener.start();
+        output.println((new Gson()).toJson(new MensajeNetwork(type, this.nombre, message)));
     }
 
     public BufferedReader getInput() {
         return input;
-    }
-
-    public PrintWriter getOutput() {
-        return output;
-    }
-
-    public static Cliente getINSTANCE() {
-        return INSTANCE;
     }
 }

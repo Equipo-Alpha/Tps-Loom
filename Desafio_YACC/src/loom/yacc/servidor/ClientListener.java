@@ -1,31 +1,36 @@
 package loom.yacc.servidor;
 
 import com.google.gson.Gson;
+import loom.yacc.common.HistorialSala;
 import loom.yacc.common.MensajeNetwork;
 import loom.yacc.common.MensajeTipo;
 
-import java.io.*;
+import java.io.BufferedReader;
+import java.io.IOException;
+import java.io.InputStreamReader;
+import java.io.PrintWriter;
 import java.net.Socket;
 import java.util.ArrayList;
 
-public class ClientListener extends Thread{
+public class ClientListener extends Thread {
+    public int id;
+    public String nombre;
     private BufferedReader input;
     private PrintWriter output;
     private ArrayList<Sala> salas; // pueden ser 3
-    private Sala salaActual; //claramente tiene que estar en salas
-    public int id;
-    public String nombre;
+    private Sala salaActual;
+    private ServerNetworkManager snm;
 
     public ClientListener(Socket clienteSocket, int id) {
         try {
             this.input = new BufferedReader(new InputStreamReader(clienteSocket.getInputStream()));
             this.output = new PrintWriter(clienteSocket.getOutputStream(), true);
+            this.salas = new ArrayList<>();
             this.id = id;
+            this.snm = new ServerNetworkManager();
             output.println("Ingrese un nombre para identificarse: ");
-        }catch (Exception e){
+        } catch (Exception e) {
             System.out.println("Se desconecto el cliente " + this.id + " cuando estaba iniciando");
-            e.printStackTrace();
-            this.close();
         }
     }
 
@@ -34,13 +39,11 @@ public class ClientListener extends Thread{
         try {
             String inputLine;
             while ((inputLine = input.readLine()) != null) {
-                ServerNetworkManager.processInput(this, inputLine);
+                snm.processInput(this, inputLine);
             }
         } catch (IOException e) {
             if (!this.isInterrupted()) {
                 System.out.println("Se desconecto incorrectamente el cliente " + this.id);
-                e.printStackTrace();
-                this.close();
             }
         }
     }
@@ -53,11 +56,8 @@ public class ClientListener extends Thread{
         output.println((new Gson()).toJson(new MensajeNetwork(type, message)));
     }
 
-    public void close(){
-        this.interrupt();
-        //eliminar salas
-        //desconectar gente
-        //
+    public void send(MensajeTipo type, HistorialSala message) {
+        output.println((new Gson()).toJson(new MensajeNetwork(type, message)));
     }
 
     public ArrayList<Sala> getSalas() {
@@ -77,15 +77,19 @@ public class ClientListener extends Thread{
         this.salaActual = salaActual;
     }
 
-    public boolean salirDeLaSala() {
-        if(estaEnUnaSala()){
+    public void salirDeLaSala() {
+        if (estaEnUnaSala()) {
+            salas.remove(salaActual);
             salaActual = null;
-            return true;
-        }
-        return false;
+        } else
+            send("No se encuentra en ninguna sala");
     }
 
-    public boolean estaEnUnaSala(){
+    public boolean puedeCrearSala() {
+        return salas.size() < 3;
+    }
+
+    public boolean estaEnUnaSala() {
         return salaActual != null;
     }
 }

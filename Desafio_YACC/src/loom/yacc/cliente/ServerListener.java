@@ -2,18 +2,20 @@ package loom.yacc.cliente;
 
 import java.io.BufferedReader;
 
-public class ServerListener extends Thread{
+public class ServerListener extends Thread {
     private final BufferedReader inputClient;
+    private final ClientNetworkManager cnm;
 
     public ServerListener(Cliente client) {
         inputClient = client.getInput();
+        cnm = new ClientNetworkManager();
     }
 
     public void run() {
         try {
             String input;
             while ((input = inputClient.readLine()) != null) {
-                ClientNetworkManager.processInput(input);
+                cnm.processInput(input);
 
             }
         } catch (Exception ex) {

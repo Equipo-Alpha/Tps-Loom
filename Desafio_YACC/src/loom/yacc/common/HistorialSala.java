@@ -6,8 +6,8 @@ public class HistorialSala {
     private final ArrayList<String> mensajes;
     public int idSala;
 
-    public HistorialSala(ArrayList<String> mensajes, int id) {
-        this.mensajes = mensajes;
+    public HistorialSala(int id) {
+        this.mensajes = new ArrayList<>();
         this.idSala = id;
     }
 

@@ -6,18 +6,30 @@ import java.net.Socket;
 import java.util.ArrayList;
 import java.util.List;
 
-public class Servidor extends Thread{
+public class Servidor extends Thread {
+    private static int idSala = 0; // el id de la sala a crear
+    private static Servidor INSTANCE;
     private final int port;
     private ServerSocket serverSocket = null;
-    private static List<ClientListener> clientes;
-    private static ArrayList<Sala> salas = new ArrayList<>(); // todas las salas creadas
-    private static int idSala = 0; // el id de la sala a crear
+    private List<ClientListener> clientes;
+    private List<Sala> salas; // todas las salas creadas
     private boolean isRunning;
 
     public Servidor(int port) {
         this.port = port;
         this.isRunning = false;
-        clientes = new ArrayList<>();
+        this.clientes = new ArrayList<>();
+        this.salas = new ArrayList<>();
+        INSTANCE = this;
+    }
+
+    public static Servidor getINSTANCE() {
+        return INSTANCE;
+    }
+
+    public static void main(String[] args) {
+        Servidor server = new Servidor(20000);
+        server.start();
     }
 
     @Override
@@ -57,16 +69,13 @@ public class Servidor extends Thread{
         }
     }
 
-    public static void crearSala(String nombre, ClientListener cliente){
+    public void crearSala(String nombre, ClientListener cliente) {
         Sala sala = new Sala(nombre, cliente, idSala++);
         salas.add(sala);
-        cliente.setSalaActual(sala);
+        cliente.agregarSala(sala);
     }
 
-    public static void main(String[] args) {
-
-        Servidor server = new Servidor(20000);
-        server.start();
-
+    public List<Sala> getSalas() {
+        return salas;
     }
 }
