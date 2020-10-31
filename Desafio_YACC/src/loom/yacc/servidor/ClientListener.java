@@ -11,6 +11,8 @@ import java.io.InputStreamReader;
 import java.io.PrintWriter;
 import java.net.Socket;
 import java.util.ArrayList;
+import java.util.Collections;
+import java.util.List;
 
 public class ClientListener extends Thread {
     public int id;
@@ -60,8 +62,8 @@ public class ClientListener extends Thread {
         output.println((new Gson()).toJson(new MensajeNetwork(type, message)));
     }
 
-    public ArrayList<Sala> getSalas() {
-        return salas;
+    public List<Sala> getSalas() {
+        return Collections.unmodifiableList(salas);
     }
 
     public void agregarSala(Sala sala) {
@@ -69,17 +71,25 @@ public class ClientListener extends Thread {
         this.salaActual = sala;
     }
 
+    public void quitarSala(Sala sala) {
+        if (this.salas.contains(sala)) {
+            salas.remove(sala);
+        }
+        if (this.salaActual.equals(sala)) {
+            salaActual = null;
+        }
+    }
+
     public Sala getSalaActual() {
         return salaActual;
     }
 
-    public void setSalaActual(Sala salaActual) {
-        this.salaActual = salaActual;
+    public void setSalaActual(Sala sala) {
+        this.salaActual = sala;
     }
 
     public void salirDeLaSala() {
         if (estaEnUnaSala()) {
-            salas.remove(salaActual);
             salaActual = null;
         } else
             send("No se encuentra en ninguna sala");

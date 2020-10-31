@@ -36,8 +36,10 @@ public class ServerNetworkManager {
                 "?:CREARSALA nombre\n" +
                 "?:VERSALAS\n" +
                 "?:VERTIEMPO\n" +
+                "?:CONECTARSESALA nombre\n" +
                 "?:UNIRSESALA nombre\n" +
                 "?:SALIRSALA\n" +
+                "?:DESCONECTARSESALA nombre\n" +
                 "?:DESCARGARHISTORIAL\n" +
                 "Para mensaje privado: @nombre mensaje");
     }
@@ -104,6 +106,12 @@ public class ServerNetworkManager {
                 case "UNIRSESALA":
                     unirseSala(cliente, comando[1]);
                     break;
+                case "CONECTARSESALA":
+                    conectarseSala(cliente, comando[1]);
+                    break;
+                case "DESCONECTARSESALA":
+                    desconectarseSala(cliente, comando[1]);
+                    break;
                 default:
                     cliente.send("Comando desconocido");
 
@@ -133,6 +141,20 @@ public class ServerNetworkManager {
     }
 
     private void unirseSala(ClientListener cliente, String nombre) {
+        if (cliente.getSalaActual() != null && cliente.getSalaActual().nombre.equals(nombre)) {
+            cliente.send("Ya se encuentra en la sala");
+        }
+        for (Sala sala : cliente.getSalas()) {
+            if (sala.nombre.equals(nombre)) {
+                cliente.setSalaActual(sala);
+                return;
+            }
+        }
+        cliente.send("No se encuentra conectado a la sala ... conectandose");
+        conectarseSala(cliente, nombre);
+    }
+
+    private void conectarseSala(ClientListener cliente, String nombre) {
         if (cliente.getSalas().size() >= 3) {
             cliente.send("No se puede unir, ya se encuentra en 3 salas.");
         }
@@ -149,6 +171,16 @@ public class ServerNetworkManager {
             }
         }
         cliente.send("No se encontro la sala con el nombre " + nombre);
+    }
+
+    private void desconectarseSala(ClientListener cliente, String nombre) {
+        for (Sala sala : cliente.getSalas()) {
+            if (sala.nombre.equals(nombre)) {
+                sala.desconectarCliente(cliente);
+                return;
+            }
+        }
+        cliente.send("No se encuentra conectado a la sala");
     }
 
     private void verTiempo(ClientListener cliente) {

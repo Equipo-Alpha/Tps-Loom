@@ -3,18 +3,15 @@ package loom.yacc.servidor;
 import loom.yacc.common.HistorialSala;
 import loom.yacc.common.MensajeTipo;
 
-import java.util.ArrayList;
-import java.util.Date;
-import java.util.HashMap;
-import java.util.Map;
+import java.util.*;
 
 public class Sala {
-    public String nombre;
     private final int idSala;
     private final HistorialSala historial;
     private final ArrayList<ClientListener> clientes;
     private final Map<ClientListener, Date> tiempoClientes;
     private final ClientListener creador;
+    public String nombre;
 
     public Sala(String nombre, ClientListener creador, int id) {
         this.nombre = nombre;
@@ -29,7 +26,7 @@ public class Sala {
     public void recibirMensaje(String mensaje) {
         historial.agregarMensaje(mensaje);
 
-        for(ClientListener cliente : clientes){
+        for (ClientListener cliente : clientes) {
             cliente.send(mensaje);
         }
     }
@@ -48,8 +45,13 @@ public class Sala {
         tiempoClientes.put(cliente, tiempo);
     }
 
-    public ArrayList<ClientListener> getClientes() {
-        return clientes;
+    public List<ClientListener> getClientes() {
+        return Collections.unmodifiableList(clientes);
+    }
+
+    public void desconectarCliente(ClientListener cliente) {
+        this.clientes.remove(cliente);
+        cliente.quitarSala(this);
     }
 
     public Date getTiempoCliente(ClientListener cliente) {
