@@ -1,0 +1,10 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<classpath>
+	<classpathentry kind="con" path="org.eclipse.jdt.launching.JRE_CONTAINER"/>
+	<classpathentry kind="src" path="Desafio_CodeGolf/src"/>
+	<classpathentry kind="src" path="Desafio_TierraFantasía/src"/>
+	<classpathentry kind="src" path="Desafio_Vikingos/src"/>
+	<classpathentry kind="src" path="Desafio_YACC/src"/>
+	<classpathentry kind="lib" path="Desafio_YACC/lib/gson-2.8.6.jar"/>
+	<classpathentry kind="output" path="bin"/>
+</classpath>
