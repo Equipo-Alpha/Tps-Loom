@@ -1,6 +1,8 @@
 package loom.yacc.common;
 
 import java.util.ArrayList;
+import java.util.Collections;
+import java.util.List;
 
 public class HistorialSala {
     private final ArrayList<String> mensajes;
@@ -11,8 +13,8 @@ public class HistorialSala {
         this.idSala = id;
     }
 
-    public ArrayList<String> getMensajes() {
-        return mensajes;
+    public List<String> getMensajes() {
+        return Collections.unmodifiableList(mensajes);
     }
 
     public void agregarMensaje(String mensaje) {
